@@ -73,3 +73,8 @@
 /.vs
 /UserSettings
 /Assembly-CSharp-Editor.csproj
+/Roll_A_Ball.sln
+/Unity.InputSystem.ForUI.csproj
+/Unity.InputSystem.TestFramework.csproj
+/Unity.InputSystem.csproj
+/Unity.VSCode.Editor.csproj
