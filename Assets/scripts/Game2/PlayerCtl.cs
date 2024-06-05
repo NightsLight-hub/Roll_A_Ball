@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -70,7 +71,7 @@ public class PlayerCtl : MonoBehaviour
         transform.Rotate(-inputLook.y * rotateSpeed, 0, 0, Space.Self);
         transform.Rotate(0, inputLook.x * rotateSpeed, 0, Space.World);
         Vector3 eular = Quaternion.LookRotation(transform.forward).eulerAngles;
-        Debug.LogFormat("eular {0}", eular);
+        //Debug.LogFormat("eular {0}", eular);
         if (eular.x > 45 && eular.x < 315)
         {
             // 限制上下旋转角度
