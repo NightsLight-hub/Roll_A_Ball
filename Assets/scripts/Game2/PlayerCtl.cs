@@ -14,12 +14,11 @@ public class PlayerCtl : MonoBehaviour
     private Rigidbody rb;
     private float inputMoveX, inputMoveY;
     private Vector2 inputLook;
-    private bool hideCurosr = false;
     // Start is called before the first frame update
     void Start()
     {
         rb = GetComponent<Rigidbody>();
-        transform.forward = new Vector3(-1, 0, 0);
+        transform.forward = new Vector3(0, 0, -1);
     }
 
     void OnCtrl()
@@ -53,21 +52,34 @@ public class PlayerCtl : MonoBehaviour
         move();
     }
 
+    private void LateUpdate()
+    {
+        rotate();
+
+    }
+
     private void move()
     {
+        if (inputMoveX == 0 && inputMoveY == 0)
+        {
+            return;
+        }
         // get player forward
         Vector3 forward = new Vector3(transform.forward.x, 0, transform.forward.z).normalized;
         // 朝向方向前进 moveY， 水平走moveX
         Vector3 movement = forward * inputMoveY + transform.right * inputMoveX;
-
         Vector3 target = transform.position + movement * moveSpeed * Time.deltaTime;
-        //Debug.LogFormat("target {0}", target);
         // change player rigidbody position
         rb.MovePosition(target);
+        //Debug.LogFormat("Player move to target {0}", target);
     }
 
     private void rotate()
     {
+        if (inputLook == Vector2.zero)
+        {
+            return;
+        }
         transform.Rotate(-inputLook.y * rotateSpeed, 0, 0, Space.Self);
         transform.Rotate(0, inputLook.x * rotateSpeed, 0, Space.World);
         Vector3 eular = Quaternion.LookRotation(transform.forward).eulerAngles;
@@ -82,6 +94,6 @@ public class PlayerCtl : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        rotate();
+
     }
 }
