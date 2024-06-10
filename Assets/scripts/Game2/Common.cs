@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
@@ -8,6 +9,8 @@ using UnityEngine;
 public class Common
 {
     private static Common instance = null;
+
+    public BlockingCollection<Photo> queue = new BlockingCollection<Photo>();
     public static Common Instance()
     {
         // single instance
@@ -18,7 +21,6 @@ public class Common
         return instance;
     }
 
-    public List<Photo> photos = new List<Photo>();
 
     public void loadImages(FileSystemInfo info)
     {
@@ -40,13 +42,18 @@ public class Common
                 try
                 {
                     fs.Read(rawData, 0, rawData.Length);//开始读取，这里最好用trycatch语句，防止读取失败报错
-                    Texture2D texture2D = new Texture2D(0, 0);
+                    Texture2D texture2D = new Texture2D(0, 0, TextureFormat.RGBA32, false);
                     texture2D.LoadImage(rawData);
+                    if (texture2D.width < 500)
+                    {
+                        fs.Close();
+                        continue;
+                    }
+                    //texture2D.format.
                     Debug.LogFormat("load image {0}, width {1}, height {2}", file.FullName, texture2D.width, texture2D.height);
-
                     // convert texture to sprite
                     Sprite sprite = Sprite.Create(texture2D, new Rect(0, 0, texture2D.width, texture2D.height), new Vector2(0.5f, 0.5f));
-                    photos.Add(new Photo(sprite, texture2D.width, texture2D.height));
+                    queue.Add(new Photo(sprite, texture2D.width, texture2D.height));
                 }
                 catch (Exception e)
                 {
@@ -54,10 +61,9 @@ public class Common
                 }
                 fs.Close();//切记关闭
             }
-
-            //对于子目录，进行递归调用
             else
             {
+                //对于子目录，进行递归调用
                 loadImages(files[i]);
             }
 

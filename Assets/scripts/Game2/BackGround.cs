@@ -3,29 +3,56 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using UnityEngine.UI;
+using System.Collections.Concurrent;
+using Unity.VisualScripting;
 
 public class BackGround : MonoBehaviour
 {
+    public string imagePath = @"C:\Users\Sunxy\Pictures\Camera Roll";
     // photoFrame perfab
     public GameObject photoFrame;
+    
     // Start is called before the first frame update
     void Start()
     {
-        Common.Instance().loadImages(new DirectoryInfo(@"C:\Users\sunxy\Pictures\Wallhaven"));
+        loadImage();
+    }
+
+    void Update()
+    {
+
+    }
+
+    private void loadImage()
+    {
+        Common.Instance().loadImages(new DirectoryInfo(imagePath));
         // instatiate photoFrame
         for (int i = 0; i < Common.Instance().photos.Count; i++)
         {
             Photo p = Common.Instance().photos[i];
-            GameObject photoFrameInstance = Instantiate(photoFrame, new Vector3(i % 2 * -20 + 10, 2, 500 - i / 2 * 3), Quaternion.identity);
+            // create photo object and its position
+            GameObject photoFrameInstance = Instantiate(photoFrame, new Vector3(i / 2 * 3, 2, i % 2 * - 20  + 10), Quaternion.identity);
             Image img = photoFrameInstance.GetComponentInChildren<Image>();
             img.sprite = p.sprite;
             img.preserveAspect = true;
+
+            // 调整photoBoard 匹配照片大小
             GameObject photoBoard = photoFrameInstance.transform.Find("PhotoBoard").gameObject;
             Debug.LogFormat("scale is {0}", photoBoard.transform.localScale);
-            // 调整photoBoard 匹配照片大小
-            photoBoard.transform.localScale = Vector3.Scale(photoBoard.transform.localScale, new Vector3(1, p.height / p.width, 1));
+            // if height > width, than set y to 1 and  scale x, or else scale y
+            if (p.height < p.width)
+            {
+                photoBoard.transform.localScale = Vector3.Scale(photoBoard.transform.localScale, new Vector3(1, p.height / p.width, 1));
+            }
+            else
+            {
+                photoBoard.transform.localScale = Vector3.Scale(photoBoard.transform.localScale, new Vector3(p.width / p.height, 1, 1));
+            }
+
             Debug.LogFormat("new scale is {0}", photoBoard.transform.localScale);
-            photoFrameInstance.transform.Rotate(new Vector3(0, i % 2 * 180 - 90, 0));
+
+            // rotate photo
+            photoFrameInstance.transform.Rotate(new Vector3(0, i % 2 * -180 + 180, 0));
 
             Mesh m = photoBoard.GetComponent<MeshFilter>().mesh;
             Vector3[] vertices = m.vertices;

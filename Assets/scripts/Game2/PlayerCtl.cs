@@ -1,7 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 
 public class PlayerCtl : MonoBehaviour
@@ -11,20 +13,26 @@ public class PlayerCtl : MonoBehaviour
     public float rotateSpeed = 0.2f;
 
     // player rigidbody
-    private Rigidbody rb;
+    //private Rigidbody rb;
+    private Vector3 originPosition;
     private float inputMoveX, inputMoveY;
     private Vector2 inputLook;
+    private CharacterController cc;
+    private Vector3 lastMoveForward;
     // Start is called before the first frame update
     void Start()
     {
-        rb = GetComponent<Rigidbody>();
-        transform.forward = new Vector3(0, 0, -1);
+        //rb = GetComponent<Rigidbody>();
+        //transform.forward = new Vector3(0, 0, -1);
+        originPosition = transform.position;
+        cc = GetComponent<CharacterController>();
+        //cc = rb.GetComponent<CharacterController>();
     }
 
     void OnCtrl()
     {
         Cursor.visible = !Cursor.visible;
-        Cursor.lockState = Cursor.visible? CursorLockMode.Confined : CursorLockMode.Locked;
+        Cursor.lockState = Cursor.visible ? CursorLockMode.Confined : CursorLockMode.Locked;
     }
 
     void OnFire()
@@ -55,7 +63,6 @@ public class PlayerCtl : MonoBehaviour
     private void LateUpdate()
     {
         rotate();
-
     }
 
     private void move()
@@ -64,15 +71,32 @@ public class PlayerCtl : MonoBehaviour
         {
             return;
         }
+
         // get player forward
-        Vector3 forward = new Vector3(transform.forward.x, 0, transform.forward.z).normalized;
-        // 朝向方向前进 moveY， 水平走moveX
-        Vector3 movement = forward * inputMoveY + transform.right * inputMoveX;
-        Vector3 target = transform.position + movement * moveSpeed * Time.deltaTime;
-        // change player rigidbody position
-        rb.MovePosition(target);
+        Vector3 forward = new Vector3(inputMoveY, 0, -inputMoveX);
+        forward = transform.TransformDirection(forward);
+        lastMoveForward = forward * Time.fixedDeltaTime * moveSpeed;
+        // cc move
+        cc.Move(lastMoveForward);
+        //Debug.LogFormat("after move, position is {0}", transform.position);
+
+        // 限制角色在特定区域
+        Vector3 newPosition = transform.position;
+        newPosition.z = Mathf.Clamp(newPosition.z, -10, 10);
+        transform.position = newPosition;
+        //Debug.LogFormat("after correct, position is {0}", transform.position);
+
+
+        //// 朝向方向前进 moveY， 水平走moveX
+        //Vector3 movement = forward * inputMoveY + transform.right * inputMoveX;
+        //Vector3 target = transform.position + movement * moveSpeed * Time.fixedDeltaTime;
+
+        //// change player rigidbody position
+        //rb.MovePosition(target);
         //Debug.LogFormat("Player move to target {0}", target);
     }
+
+
 
     private void rotate()
     {
@@ -80,7 +104,8 @@ public class PlayerCtl : MonoBehaviour
         {
             return;
         }
-        transform.Rotate(-inputLook.y * rotateSpeed, 0, 0, Space.Self);
+
+        transform.Rotate(0, 0, inputLook.y * rotateSpeed, Space.Self);
         transform.Rotate(0, inputLook.x * rotateSpeed, 0, Space.World);
         Vector3 eular = Quaternion.LookRotation(transform.forward).eulerAngles;
         //Debug.LogFormat("eular {0}", eular);
@@ -89,11 +114,5 @@ public class PlayerCtl : MonoBehaviour
             // 限制上下旋转角度
             transform.Rotate(inputLook.y * rotateSpeed, 0, 0, Space.Self);
         }
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
     }
 }
