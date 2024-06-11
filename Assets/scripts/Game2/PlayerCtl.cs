@@ -75,25 +75,9 @@ public class PlayerCtl : MonoBehaviour
         // get player forward
         Vector3 forward = new Vector3(inputMoveY, 0, -inputMoveX);
         forward = transform.TransformDirection(forward);
-        lastMoveForward = forward * Time.fixedDeltaTime * moveSpeed;
+        lastMoveForward = forward * moveSpeed;
         // cc move
-        cc.Move(lastMoveForward);
-        //Debug.LogFormat("after move, position is {0}", transform.position);
-
-        // 限制角色在特定区域
-        Vector3 newPosition = transform.position;
-        newPosition.z = Mathf.Clamp(newPosition.z, -10, 10);
-        transform.position = newPosition;
-        //Debug.LogFormat("after correct, position is {0}", transform.position);
-
-
-        //// 朝向方向前进 moveY， 水平走moveX
-        //Vector3 movement = forward * inputMoveY + transform.right * inputMoveX;
-        //Vector3 target = transform.position + movement * moveSpeed * Time.fixedDeltaTime;
-
-        //// change player rigidbody position
-        //rb.MovePosition(target);
-        //Debug.LogFormat("Player move to target {0}", target);
+        cc.SimpleMove(lastMoveForward);
     }
 
 

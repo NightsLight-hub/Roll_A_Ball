@@ -10,7 +10,9 @@ public class Common
 {
     private static Common instance = null;
 
-    public BlockingCollection<Photo> queue = new BlockingCollection<Photo>();
+    public BlockingCollection<PhotoRawData> queue = new BlockingCollection<PhotoRawData>();
+
+    public bool isLoadImage = false;
     public static Common Instance()
     {
         // single instance
@@ -21,9 +23,22 @@ public class Common
         return instance;
     }
 
+    public PhotoRawData? TryGetPhoto()
+    {
+        if (queue.TryTake(out PhotoRawData p))
+        {
+            return p;
+        }
+        else
+        {
+            return null;
+        }
+    }
+
 
     public void loadImages(FileSystemInfo info)
     {
+        isLoadImage = true;
         if (!info.Exists) return;
 
         DirectoryInfo dir = info as DirectoryInfo;
@@ -42,32 +57,26 @@ public class Common
                 try
                 {
                     fs.Read(rawData, 0, rawData.Length);//开始读取，这里最好用trycatch语句，防止读取失败报错
-                    Texture2D texture2D = new Texture2D(0, 0, TextureFormat.RGBA32, false);
-                    texture2D.LoadImage(rawData);
-                    if (texture2D.width < 500)
-                    {
-                        fs.Close();
-                        continue;
-                    }
-                    //texture2D.format.
-                    Debug.LogFormat("load image {0}, width {1}, height {2}", file.FullName, texture2D.width, texture2D.height);
-                    // convert texture to sprite
-                    Sprite sprite = Sprite.Create(texture2D, new Rect(0, 0, texture2D.width, texture2D.height), new Vector2(0.5f, 0.5f));
-                    queue.Add(new Photo(sprite, texture2D.width, texture2D.height));
+                    queue.Add(new PhotoRawData(rawData, fs.Name));
+                                       
                 }
                 catch (Exception e)
                 {
                     Debug.LogError(e);
                 }
-                fs.Close();//切记关闭
+                finally
+                {
+                    fs.Close();//切记关闭
+                }
             }
             else
             {
                 //对于子目录，进行递归调用
                 loadImages(files[i]);
             }
-
         }
+        isLoadImage = false;
+        return;
     }
 
     // Start is called before the first frame update
@@ -83,16 +92,14 @@ public class Common
     }
 }
 
-public struct Photo
+public struct PhotoRawData
 {
-    public Sprite sprite;
-    public float width;
-    public float height;
-    // constructor
-    public Photo(Sprite sprite, float width, float height)
+    public byte[] rawData;
+    public string name;
+    public PhotoRawData(byte[] rawData, string name)
     {
-        this.sprite = sprite;
-        this.width = width;
-        this.height = height;
+        this.rawData = rawData;
+        this.name = name;
     }
+
 }
