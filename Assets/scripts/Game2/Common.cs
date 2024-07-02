@@ -8,19 +8,14 @@ using UnityEngine;
 
 public class Common
 {
-    private static Common instance = null;
+    private static readonly Common instance = new Common();
 
     public BlockingCollection<PhotoRawData> queue = new BlockingCollection<PhotoRawData>();
 
     public bool isLoadImage = false;
-    public static Common Instance()
+    public static Common Instance
     {
-        // single instance
-        if (instance == null)
-        {
-            instance = new Common();
-        }
-        return instance;
+        get { return instance; }
     }
 
     public PhotoRawData? TryGetPhoto()
@@ -57,8 +52,8 @@ public class Common
                 try
                 {
                     fs.Read(rawData, 0, rawData.Length);//开始读取，这里最好用trycatch语句，防止读取失败报错
+                    Debug.LogFormat("add photo {0} to queue", fs.Name);
                     queue.Add(new PhotoRawData(rawData, fs.Name));
-                                       
                 }
                 catch (Exception e)
                 {
@@ -79,17 +74,6 @@ public class Common
         return;
     }
 
-    // Start is called before the first frame update
-    void Start()
-    {
-
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
-    }
 }
 
 public struct PhotoRawData
