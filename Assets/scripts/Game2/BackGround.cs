@@ -73,7 +73,7 @@ public class BackGround : MonoBehaviour
     private void loadImage()
     {
         // start task
-        loadImageTask = new Task(() => Common.Instance.loadImages(new DirectoryInfo(imagePath)));//无参数无返回值的方法
+        loadImageTask = new Task(() => Common.Instance.LoadImages(new DirectoryInfo(imagePath)));//无参数无返回值的方法
         loadImageTask.Start();
     }
 
@@ -110,6 +110,7 @@ public class BackGround : MonoBehaviour
                 }
                 else
                 {
+                    Debug.Log("generatePhoto finished!");
                     break;
                 }
             }
@@ -155,7 +156,7 @@ public class BackGround : MonoBehaviour
             Vector3? position = GetPhotoPosition(i, path);
             if (position == null)
             {
-                Debug.LogFormat("no more position to generate photo， coroutine generatePhoto exit");
+                Debug.LogFormat("no more position to generate photo，generatePhoto exit");
                 return;
             }
             position += offset;

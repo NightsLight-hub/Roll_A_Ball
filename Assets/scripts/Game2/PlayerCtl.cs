@@ -32,7 +32,7 @@ public class PlayerCtl : MonoBehaviour
     void OnCtrl()
     {
         Cursor.visible = !Cursor.visible;
-        Cursor.lockState = Cursor.visible ? CursorLockMode.Confined : CursorLockMode.Locked;
+        Cursor.lockState = Cursor.visible ? CursorLockMode.None : CursorLockMode.Locked;
     }
 
     void OnFire()

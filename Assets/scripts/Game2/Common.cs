@@ -12,7 +12,7 @@ public class Common
 
     public BlockingCollection<PhotoRawData> queue = new BlockingCollection<PhotoRawData>();
 
-    public bool isLoadImage = false;
+    public bool isLoadImage = true;
     public static Common Instance
     {
         get { return instance; }
@@ -30,10 +30,17 @@ public class Common
         }
     }
 
-
-    public void loadImages(FileSystemInfo info)
+    public void LoadImages(FileSystemInfo info)
     {
-        isLoadImage = true;
+        LoadImagesInternal(info);
+        string additionalDir = Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "photos");
+        Debug.Log("load photo from " + additionalDir);
+        LoadImagesInternal(new DirectoryInfo(additionalDir));
+        isLoadImage = false;
+    }
+
+    private void LoadImagesInternal(FileSystemInfo info)
+    {
         if (!info.Exists) return;
 
         DirectoryInfo dir = info as DirectoryInfo;
@@ -67,10 +74,9 @@ public class Common
             else
             {
                 //对于子目录，进行递归调用
-                loadImages(files[i]);
+                LoadImages(files[i]);
             }
         }
-        isLoadImage = false;
         return;
     }
 
